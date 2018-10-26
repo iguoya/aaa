@@ -1,0 +1,74 @@
+//#include <wx/wxprec.h>
+
+//#ifndef WX_PRECOMP
+#include <wx/wx.h>
+//#endif
+
+#include "Login.h"
+
+IMPLEMENT_APP(Login)
+
+bool Login::OnInit()
+{
+    MainFrame *frame = new MainFrame;
+                                    
+    frame->Show(true);
+    SetTopWindow(frame);
+    return true;
+    
+}
+
+MainFrame::MainFrame()
+    :wxFrame(NULL, wxID_ANY, _T("登录窗口"),wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE)
+{
+    m_log = new wxTextCtrl( this, wxID_ANY, _T("This is the log window.\n"),wxDefaultPosition,wxSize(800, wxDefaultCoord), wxTE_MULTILINE | wxTE_READONLY /* | wxTE_RICH */);
+
+}
+
+
+
+void MainFrame::OnConnectToServer(wxCommandEvent& WXUNUSED(event)) {
+    //    std::cout<<wxStrlen(m_username->GetValue())<<std::endl;
+    /*
+    wxMessageBox(wxString::Format(_T("username: %s\n")
+                                  _T("password: %s\n"),
+                                  m_username->GetValue(),
+                                  +m_password->GetValue()
+                                  ),
+                 _T("test:"), wxOK, this);
+    */
+    wxIPV4address addr;
+    addr.Hostname(wxT("localhost"));
+    addr.Service(5000);
+    wxSocketClient* Socket = new wxSocketClient();
+    Socket->SetEventHandler(*this, SOCKET_ID);
+
+    Socket->Notify(true);
+    
+    Socket->Connect(addr, false);
+    
+    //    Close(true);
+}
+void MainFrame::OnLogin(wxSocketEvent& event) {
+    wxSocketBase* sock = event.GetSocket();
+
+    char buf[10] = "abcd";
+    switch(event.GetSocketEvent()) {
+    case wxSOCKET_CONNECTION:
+        sock->Write(buf, sizeof(buf));
+        break;
+    case wxSOCKET_INPUT:
+        sock->Read(buf, sizeof(buf));
+        break;
+    case wxSOCKET_LOST:
+        sock->Destroy():
+            break;
+    }
+
+}
+
+
+void MainFrame::OnQuit(wxCommandEvent& WXUNUSED(event)) {
+    Close(true);
+}
+
